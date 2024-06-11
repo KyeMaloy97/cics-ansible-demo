@@ -1,34 +1,33 @@
----
-- name: Provision CICS Data sets and start the region
-  hosts: all
+- name: Provision CICS region data sets in intial state and start it
+  hosts: zos
   gather_facts: false
-  vars_files: "{{ playbook_dir }}/host_vars/variables.yml"
+  vars_files: "{{ playbook_dir }}/../vars.yml"
   environment: "{{ environment_vars }}"
 
   vars:
-    applid: APPLID
-    cmci_port: 27000
+    applid: "CICSTU01"
 
   module_defaults:
-    group/ibm.ibm_zos_cics.region_group:
+    group/ibm.ibm_zos_cics.region:
       state: initial
       cics_data_sets:
-        template: "CTS610.CICS740.<< lib_name >>"
-        sdfhlic: "CTS610.CICS740.LIC.SDFHLIC"
+        template: "CICSTS.V6R1M0.CICS.<< lib_name >>"
       region_data_sets:
-        template: "{{ ansible_user }}.REGIONS.{{ applid }}.<< data_set_name >>"
+        template: "CICSTU.{{ applid }}.<< data_set_name >>"
       le_data_sets:
         template: "CEE.<< lib_name >>"
+      cpsm_data_sets:
+        template:  "CICSTS.V6R1M0.CPSM.<< lib_name >>"
 
   tasks:
     - name: Create the auxiliary temporary storage data set (DFHTEMP)
-      ibm.ibm_zos_cics.auxiliary_temp:
+      ibm.ibm_zos_cics.aux_temp_storage:
 
     - name: Create the auxiliary trace data set (DFHAUXT)
-      ibm.ibm_zos_cics.trace:
+      ibm.ibm_zos_cics.aux_trace:
 
     - name: Create the second auxiliary trace data set (DFHBUXT)
-      ibm.ibm_zos_cics.trace:
+      ibm.ibm_zos_cics.aux_trace:
         destination: B
 
     - name: Create the transaction dump data set (DFHDMPA)
@@ -41,26 +40,14 @@
     - name: Create the CSD data set (DFHCSD)
       ibm.ibm_zos_cics.csd:
 
-    - name: Create a CSDUP script on z/OS Unix
-      ibm.ibm_zos_core.zos_copy:
-        src: "{{ playbook_dir }}/files/CSDUP_script_smss"
-        dest: "/u/{{ ansible_user | lower }}/csdup_script/script"
-        use_template: true
-
     - name: Update the CSD data set with the CSDUP script
       ibm.ibm_zos_cics.csd:
-        state: script
-        script_location: USS
-        script_src: "/u/{{ ansible_user | lower }}/csdup_script/script"
-      ignore_errors: true
-
-    - name: Remove CSDUP script directory and file
-      ansible.builtin.file:
-        path: "/u/{{ ansible_user | lower }}/csdup_script"
-        state: absent
+        state: changed
+        input_location: INLINE
+        input_content: ADD GROUP(DFHTERMC) LIST(DFHLIST1)
 
     - name: Create the transient data intrapartition data set (DFHINTRA)
-      ibm.ibm_zos_cics.intrapartition:
+      ibm.ibm_zos_cics.td_intrapartition:
 
     - name: Create the local request queue data set (DFHLRQ)
       ibm.ibm_zos_cics.local_request_queue:
@@ -71,34 +58,23 @@
     - name: Create the local catalog data set (DFHLCD)
       ibm.ibm_zos_cics.local_catalog:
 
-    - name: Start CICS Region
-      ibm.ibm_zos_cics.start_cics:
-        submit_jcl: true
+    - name: Create CICS JCL
+      ibm.ibm_zos_cics.region_jcl:
         applid: "{{ applid }}"
-        steplib:
-          top_libraries:
-            - CTS610.CPSM610.SEYUAUTH
-        dfhrpl:
-          top_libraries:
-            - CTS610.CPSM610.SEYULOAD
         job_parameters:
           region: 0M
         sit_parameters:
-          start: INITIAL
+          start: AUTO
           sit: 6$
           aicons: AUTO
-          cicssvc: 217
           edsalim: 500M
           grplist: (DFHLIST*)
-          gmtext: '''Region provisioned with Ansible'''
-          srbsvc: 218
-          tcpip: "YES"
-          usshome: /cics/cics740
-          sysidnt: ZPY1
-          cpsmconn: "NO"
-          sec: "NO"
-      register: result
+          gmtext: '''Region provisioned with Ansible using IBM watsonx Assistant for Z'''
+          tcpip: "NO"
+          usshome: /usr/lpp/cicsts/cicsts61/
+          sysidnt: KYE1
 
-    - name: Output start CICS JCL
-      ansible.builtin.debug:
-        msg: "{{ result }}"
+    - name: Submit region JCL
+      ansible.builtin.command:
+        cmd: jsub "CICSTU.{{ applid }}.DFHSTART"
+      changed_when: True
