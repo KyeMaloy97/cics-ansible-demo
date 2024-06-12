@@ -1,11 +1,11 @@
 - name: Provision CICS region data sets in intial state and start it
-  hosts: zos
+  hosts: all
   gather_facts: false
-  vars_files: "{{ playbook_dir }}/../vars.yml"
   environment: "{{ environment_vars }}"
 
   vars:
-    applid: "CICSTU01"
+    applid: CICSTU01
+    cmci_port: 2700
 
   module_defaults:
     group/ibm.ibm_zos_cics.region:
@@ -20,6 +20,11 @@
         template:  "CICSTS.V6R1M0.CPSM.<< lib_name >>"
 
   tasks:
+    - name: Submit region JCL
+      ansible.builtin.command:
+        cmd: echo "Hello world!"
+      changed_when: True
+
     - name: Create the auxiliary temporary storage data set (DFHTEMP)
       ibm.ibm_zos_cics.aux_temp_storage:
 
@@ -69,10 +74,12 @@
           aicons: AUTO
           edsalim: 500M
           grplist: (DFHLIST*)
-          gmtext: '''Region provisioned with Ansible using IBM watsonx Assistant for Z'''
-          tcpip: "NO"
+          gmtext: Region provisioned with Ansible using IBM watsonx Assistant for Z
+          tcpip: "YES"
           usshome: /usr/lpp/cicsts/cicsts61/
           sysidnt: KYE1
+          cpsmconn: "NO"
+          sec: "NO"
 
     - name: Submit region JCL
       ansible.builtin.command:

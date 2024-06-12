@@ -2,23 +2,22 @@
 - name: Stop CICS and deprovision CICS Data sets
   hosts: all
   gather_facts: false
-  vars_files: "{{ playbook_dir }}/host_vars/variables.yml"
-  environment: "{{ z_environment_vars }}"
+  environment: "{{ environment_vars }}"
 
   vars:
-    applid: IYK2ZOE3
-    job_id: JOB48523
+    applid: CICSTU01
 
   module_defaults:
-    group/ibm.ibm_zos_cics.region_group:
+    group/ibm.ibm_zos_cics.region:
       state: absent
       cics_data_sets:
-        template: "CTS610.CICS740.<< lib_name >>"
-        sdfhlic: "CTS610.CICS740.LIC.SDFHLIC"
+        template: "CICSTS.V6R1M0.CICS.<< lib_name >>"
       region_data_sets:
-        template: "{{ ansible_user }}.RGNS.{{ applid }}.<< data_set_name >>"
+        template: "CICSTU.{{ applid }}.<< data_set_name >>"
       le_data_sets:
         template: "CEE.<< lib_name >>"
+      cpsm_data_sets:
+        template:  "CICSTS.V6R1M0.CPSM.<< lib_name >>"
 
   tasks:
     - name: Stop CICS Region

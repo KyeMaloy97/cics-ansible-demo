@@ -1,0 +1,19 @@
+################################################################################
+# Copyright (c) IBM Corporation 2020
+################################################################################
+
+################################################################################
+# Enviroment variables for all z/OS managed nodes (target) that do not need
+# further configuration.
+################################################################################
+environment_vars:
+  _BPXK_AUTOCVT: "ON"
+  ZOAU_HOME: "{{ ZOAU }}"
+  LIBPATH: "{{ ZOAU }}/lib:{{ PYZ }}/lib:/lib:/usr/lib:."
+  PATH: "{{ ZOAU }}/bin:{{ PYZ }}/bin:/bin:/var/bin"
+  _CEE_RUNOPTS: "FILETAG(AUTOCVT,AUTOTAG) POSIX(ON)"
+  _TAG_REDIR_ERR: "txt"
+  _TAG_REDIR_IN: "txt"
+  _TAG_REDIR_OUT: "txt"
+  LANG: "C"
+  PYTHONSTDINENCODING: "cp1047"

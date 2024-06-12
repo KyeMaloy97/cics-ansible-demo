@@ -1,0 +1,5 @@
+source_system:
+  hosts:
+    zos_host:
+      ansible_host: share.centers.ihost.com
+      ansible_user: alicia
