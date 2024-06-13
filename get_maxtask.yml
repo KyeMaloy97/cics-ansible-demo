@@ -1,0 +1,12 @@
+- name: Return current value of MXT in CICS
+  hosts: all
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  vars:
+  applid: CICSTU01
+- tasks:
+  - name: Submit region JCL
+    ansible.builtin.command:
+      cmd: jsub "CICSTU.{{ applid }}.DFHSTART"
+    changed_when: True
