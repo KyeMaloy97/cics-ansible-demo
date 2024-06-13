@@ -20,11 +20,6 @@
         template:  "CICSTS.V6R1M0.CPSM.<< lib_name >>"
 
   tasks:
-    - name: Submit region JCL
-      ansible.builtin.command:
-        cmd: echo "Hello world!"
-      changed_when: True
-
     - name: Create the auxiliary temporary storage data set (DFHTEMP)
       ibm.ibm_zos_cics.aux_temp_storage:
 

@@ -1,4 +1,3 @@
----
 - name: Stop CICS and deprovision CICS Data sets
   hosts: all
   gather_facts: false
@@ -22,7 +21,7 @@
   tasks:
     - name: Stop CICS Region
       ibm.ibm_zos_cics.stop_cics:
-        job_id: "{{ job_id }}"
+        job_id: "{{ applid }}"
       register: result
     
     - name: Log output of stop
