@@ -1,12 +1,33 @@
-- name: Return current value of MXT in CICS
+- name: Fetch value from CICSRegion resource
   hosts: all
   gather_facts: false
   environment: "{{ environment_vars }}"
 
   vars:
-  applid: CICSTU01
-- tasks:
-  - name: Submit region JCL
-    ansible.builtin.command:
-      cmd: jsub "CICSTU.{{ applid }}.DFHSTART"
-    changed_when: True
+    applid: CICSTU01
+    cmci_port: 2700
+
+  tasks:
+  - name: Get CICS region information
+    ibm.ibm_zos_cics.cmci_get:
+      cmci_host: "share.centers.ihost.com"
+      cmci_port: "{{ cmci_port }}"
+      context: "{{ applid }}"
+      scheme: "http"
+      insecure: true
+      type: "CICSRegion"
+    register: result
+  
+  - name: Print out the requested attribute 
+    debug:
+      var: "result.records[0].{{ attribute }}"
+
+  # - name: Create CICS TCPIPService Resource
+  #   ibm.ibm_zos_cics.cmci_create:
+  #     cmci_host: "share.centers.ihost.com"
+  #     cmci_port: "{{ cmci_port }}"
+  #     context: "{{ applid }}"
+  #     scheme: "http"
+  #     insecure: true
+  #     type: "CICSTCPIPService"
+  #   register: result

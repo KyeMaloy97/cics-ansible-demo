@@ -1,6 +1,7 @@
 - name: Provision CICS region data sets in intial state and start it
   hosts: all
   gather_facts: false
+  vars_files: "{{ playbook_dir }}/host_vars/variables.yml"
   environment: "{{ environment_vars }}"
 
   vars:
@@ -10,57 +11,129 @@
   module_defaults:
     group/ibm.ibm_zos_cics.region:
       state: initial
-      cics_data_sets:
-        template: "CICSTS.V6R1M0.CICS.<< lib_name >>"
-      region_data_sets:
-        template: "CICSTU.{{ applid }}.<< data_set_name >>"
-      le_data_sets:
-        template: "CEE.<< lib_name >>"
-      cpsm_data_sets:
-        template:  "CICSTS.V6R1M0.CPSM.<< lib_name >>"
 
   tasks:
     - name: Create the auxiliary temporary storage data set (DFHTEMP)
       ibm.ibm_zos_cics.aux_temp_storage:
+        region_data_sets:
+          dfhtemp:
+            dsn: "CICSTU.{{ applid }}.DFHTEMP"
 
     - name: Create the auxiliary trace data set (DFHAUXT)
       ibm.ibm_zos_cics.aux_trace:
+        region_data_sets:
+          dfhauxt:
+            dsn: "CICSTU.{{ applid }}.DFHAUXT"
 
     - name: Create the second auxiliary trace data set (DFHBUXT)
       ibm.ibm_zos_cics.aux_trace:
+        region_data_sets: 
+          dfhbuxt:
+            dsn: "CICSTU.{{ applid }}.DFHBUXT"
         destination: B
 
     - name: Create the transaction dump data set (DFHDMPA)
       ibm.ibm_zos_cics.transaction_dump:
+        region_data_sets:
+          dfhdmpa:
+            dsn: "CICSTU.{{ applid }}.DFHDMPA"
 
     - name: Create the second transaction dump data set (DFHDMPB)
       ibm.ibm_zos_cics.transaction_dump:
+        region_data_sets:
+          dfhdmpb:
+            dsn: "CICSTU.{{ applid }}.DFHDMPB"
         destination: B
 
     - name: Create the CSD data set (DFHCSD)
       ibm.ibm_zos_cics.csd:
+        region_data_sets:
+          dfhcsd:
+            dsn: "CICSTU.{{ applid }}.DFHCSD"
+        cics_data_sets:
+          sdfhload: "CICSTS.V6R1M0.CICS.SDFHLOAD"
 
     - name: Update the CSD data set with the CSDUP script
       ibm.ibm_zos_cics.csd:
         state: changed
+        region_data_sets:
+          dfhcsd:
+            dsn: "CICSTU.{{ applid }}.DFHCSD"
+        cics_data_sets:
+          sdfhload: "CICSTS.V6R1M0.CICS.SDFHLOAD"
         input_location: INLINE
-        input_content: ADD GROUP(DFHTERMC) LIST(DFHLIST1)
+        input_content: |
+            ADD GROUP(DFHTERMC) LIST(DFHLIST1)
+            COPY GROUP(DFH$WU) TO(WUIGRP)
+            ALTER TCPIPSERVICE(DFH$WUTC)   GROUP(WUIGRP)  PORT({{ cmci_port }})
+            ADD GROUP(WUIGRP) LIST(DFHLIST1)
 
     - name: Create the transient data intrapartition data set (DFHINTRA)
       ibm.ibm_zos_cics.td_intrapartition:
+        region_data_sets:
+          dfhintra:
+            dsn: "CICSTU.{{ applid }}.DFHINTRA"
+
 
     - name: Create the local request queue data set (DFHLRQ)
       ibm.ibm_zos_cics.local_request_queue:
+        region_data_sets:
+          dfhlrq:
+            dsn: "CICSTU.{{ applid }}.DFHLRQ"
 
     - name: Create the global catalog data set (DFHGCD)
       ibm.ibm_zos_cics.global_catalog:
+        region_data_sets:
+          dfhgcd:
+            dsn: "CICSTU.{{ applid }}.DFHGCD"
+        cics_data_sets:
+          sdfhload: "CICSTS.V6R1M0.CICS.SDFHLOAD"
 
     - name: Create the local catalog data set (DFHLCD)
       ibm.ibm_zos_cics.local_catalog:
+        region_data_sets:
+          dfhlcd:
+            dsn: "CICSTU.{{ applid }}.DFHLCD"
+        cics_data_sets:
+          sdfhload: "CICSTS.V6R1M0.CICS.SDFHLOAD"
 
     - name: Create CICS JCL
       ibm.ibm_zos_cics.region_jcl:
         applid: "{{ applid }}"
+        region_data_sets:
+          dfhauxt:
+            dsn: "CICSTU.{{ applid }}.DFHAUXT"
+          dfhbuxt:
+            dsn: "CICSTU.{{ applid }}.DFHBUXT"
+          dfhdmpa:
+            dsn: "CICSTU.{{ applid }}.DFHDMPA"
+          dfhdmpb:
+            dsn: "CICSTU.{{ applid }}.DFHDMPB"
+          dfhcsd:
+            dsn: "CICSTU.{{ applid }}.DFHCSD"
+          dfhgcd:
+            dsn: "CICSTU.{{ applid }}.DFHGCD"
+          dfhlcd:
+            dsn: "CICSTU.{{ applid }}.DFHLCD"
+          dfhlrq:
+            dsn: "CICSTU.{{ applid }}.DFHLRQ"
+          dfhintra:
+            dsn: "CICSTU.{{ applid }}.DFHINTRA"
+          dfhtemp:
+            dsn: "CICSTU.{{ applid }}.DFHTEMP"
+          dfhstart:
+            dsn: "CICSTU.{{ applid }}.DFHSTART"
+        cics_data_sets:
+          sdfhauth:  "CICSTS.V6R1M0.CICS.SDFHAUTH"
+          sdfhlic: "CICSTS.V6R1M0.CICS.SDFHLIC"
+          sdfhload: "CICSTS.V6R1M0.CICS.SDFHLOAD"
+        cpsm_data_sets:
+          seyuauth: "CICSTS.V6R1M0.CPSM.SEYUAUTH"
+          seyuload: "CICSTS.V6R1M0.CPSM.SEYULOAD"
+        le_data_sets:
+          sceecics: "CEE.SCEECICS"
+          sceerun: "CEE.SCEERUN"
+          sceerun2: "CEE.SCEERUN2"
         job_parameters:
           region: 0M
         sit_parameters:
@@ -73,7 +146,6 @@
           tcpip: "YES"
           usshome: /usr/lpp/cicsts/cicsts61/
           sysidnt: KYE1
-          cpsmconn: "NO"
           sec: "NO"
 
     - name: Submit region JCL
