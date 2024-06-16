@@ -1,0 +1,32 @@
+# (c) Copyright IBM Corporation 2021
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: CICS Program Deploy
+
+  hosts: "all"
+  gather_facts: false
+
+  vars:
+    applid: CICSTU01
+    program: HELLOWRD
+
+  tasks:
+    - name: Copy PDS member from build to load library
+      environment: "{{ environment_vars }}"
+      ibm.ibm_zos_core.zos_copy:
+        src: "({{ program }})"
+        dest: "ALICIA.({{ program }})"
+        remote_src: true
+
+    - name: NEWCOPY PROGRAM in CICS
+      ibm.ibm_zos_cics.cmci_action:
+      cmci_host: "share.centers.ihost.com"
+      cmci_port: "{{ cmci_port }}"
+      context: "{{ applid }}"
+      scheme: "http"
+      insecure: true
+      action_name: NEWCOPY
+      type: CICSProgram
+      resources:
+        filter:
+          program: "{{ program }}"
