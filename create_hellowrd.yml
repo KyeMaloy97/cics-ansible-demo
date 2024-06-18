@@ -1,0 +1,64 @@
+# (c) Copyright IBM Corp. 2023
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Create the program and transaction
+  hosts: all 
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+  
+  vars: 
+    program: HELLOWRD
+    applid: CICSTU01
+    transaction: KYEM
+    csdgroup: KYEGRP
+    cmci_port: 2700
+
+  module_defaults:
+    group/ibm.ibm_zos_cics.cmci_group:
+      cmci_host: "share.centers.ihost.com"
+      cmci_port: "{{ cmci_port }}"
+      context: "{{ applid }}"
+      scheme: http
+      insecure: true
+
+  tasks:
+    - name: Create the CICSProgramDefinition
+      ibm.ibm_zos_cics.cmci_create:
+        type: "CICSDefinitionProgram"
+        attributes:
+          name: "{{ program }}"
+          csdgroup: "{{ csdgroup }}"
+        create_parameters:
+          - name: "csd"
+
+    - name: Create the CICSTransactionDefinition 
+      ibm.ibm_zos_cics.cmci_create:
+        type: "CICSDefinitionTransaction"
+        attributes:
+          name: "{{ transaction }}"
+          csdgroup: "{{ csdgroup }}"
+          program: "{{ program }}"
+        create_parameters:
+          - name: "csd"
+
+    - name: Install the program 
+      ibm.ibm_zos_cics.cmci_action:
+        type: "CICSDefinitionProgram"
+        action_name: CSDINSTALL
+        resources:
+          filter:
+            name: "{{ program }}"
+          get_parameters:
+            - name: csdgroup
+              value: "{{ csdgroup }}"
+
+    - name: Install the transaction 
+      ibm.ibm_zos_cics.cmci_action:
+        type: "CICSDefinitionTransaction"
+        action_name: CSDINSTALL
+        resources:
+          filter:
+            name: "{{ transaction }}"
+          get_parameters:
+            - name: csdgroup
+              value: "{{ csdgroup }}"

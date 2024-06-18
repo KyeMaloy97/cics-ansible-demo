@@ -9,6 +9,29 @@
   module_defaults:
     group/ibm.ibm_zos_cics.region:
       state: absent
+      region_data_sets:
+        dfhauxt:
+          dsn: "CICSTU.{{ applid }}.DFHAUXT"
+        dfhbuxt:
+          dsn: "CICSTU.{{ applid }}.DFHBUXT"
+        dfhdmpa:
+          dsn: "CICSTU.{{ applid }}.DFHDMPA"
+        dfhdmpb:
+          dsn: "CICSTU.{{ applid }}.DFHDMPB"
+        dfhcsd:
+          dsn: "CICSTU.{{ applid }}.DFHCSD"
+        dfhgcd:
+          dsn: "CICSTU.{{ applid }}.DFHGCD"
+        dfhlcd:
+          dsn: "CICSTU.{{ applid }}.DFHLCD"
+        dfhlrq:
+          dsn: "CICSTU.{{ applid }}.DFHLRQ"
+        dfhintra:
+          dsn: "CICSTU.{{ applid }}.DFHINTRA"
+        dfhtemp:
+          dsn: "CICSTU.{{ applid }}.DFHTEMP"
+        dfhstart:
+          dsn: "CICSTU.{{ applid }}.DFHSTART"
       cics_data_sets:
         sdfhauth:  "CICSTS.V6R1M0.CICS.SDFHAUTH"
         sdfhlic: "CICSTS.V6R1M0.CICS.SDFHLIC"
@@ -33,68 +56,38 @@
 
     - name: Delete the auxiliary temporary storage data set (DFHTEMP)
       ibm.ibm_zos_cics.aux_temp_storage:
-        region_data_sets:
-          dfhtemp:
-            dsn: "CICSTU.{{ applid }}.DFHTEMP"
 
     - name: Delete the auxiliary trace data set (DFHAUXT)
       ibm.ibm_zos_cics.aux_trace:
-        region_data_sets:
-          dfhauxt:
-            dsn: "CICSTU.{{ applid }}.DFHAUXT"
 
     - name: Delete the second auxiliary trace data set (DFHBUXT)
       ibm.ibm_zos_cics.aux_trace:
-        region_data_sets:
-          dfhbuxt:
-            dsn: "CICSTU.{{ applid }}.DFHBUXT"
         destination: B
 
     - name: Delete the transaction dump data set (DFHDMPA)
       ibm.ibm_zos_cics.transaction_dump:
-        region_data_sets:
-          dfhdmpa:
-            dsn: "CICSTU.{{ applid }}.DFHDMPA"
 
     - name: Delete the second transaction dump data set (DFHDMPB)
       ibm.ibm_zos_cics.transaction_dump:
-        region_data_sets:
-          dfhdmpb:
-            dsn: "CICSTU.{{ applid }}.DFHDMPB"
         destination: B
 
     - name: Delete the CSD data set (DFHCSD)
       ibm.ibm_zos_cics.csd:
-        region_data_sets:
-          dfhcsd:
-            dsn: "CICSTU.{{ applid }}.DFHCSD"
-        cics_data_sets:
-          sdfhload: "CICSTS.V6R1M0.CICS.SDFHLOAD"
 
     - name: Delete the transient data intrapartition data set (DFHINTRA)
       ibm.ibm_zos_cics.td_intrapartition:
-        region_data_sets:
-          dfhintra:
-            dsn: "CICSTU.{{ applid }}.DFHINTRA"
 
     - name: Delete the local request queue data set (DFHLRQ)
       ibm.ibm_zos_cics.local_request_queue:
-        region_data_sets:
-          dfhlrq:
-            dsn: "CICSTU.{{ applid }}.DFHLRQ"
 
     - name: Delete the global catalog data set (DFHGCD)
       ibm.ibm_zos_cics.global_catalog:
-        region_data_sets:
-          dfhgcd:
-            dsn: "CICSTU.{{ applid }}.DFHGCD"
-        cics_data_sets:
-          sdfhload: "CICSTS.V6R1M0.CICS.SDFHLOAD"
 
     - name: Delete the local catalog data set (DFHLCD)
       ibm.ibm_zos_cics.local_catalog:
-        region_data_sets:
-          dfhlcd:
-            dsn: "CICSTU.{{ applid }}.DFHLCD"
-        cics_data_sets:
-          sdfhload: "CICSTS.V6R1M0.CICS.SDFHLOAD"
+
+    - name: Delete startup JCL (DFHSTART)
+      ibm.ibm_zos_cics.region_jcl:
+        applid: "{{ applid }}"
+
+
