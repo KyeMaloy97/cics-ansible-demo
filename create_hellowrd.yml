@@ -1,12 +1,12 @@
-# (c) Copyright IBM Corp. 2023
+# (C) Copyright IBM Corp. 2024
 # Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
 ---
 - name: Create the program and transaction
-  hosts: all 
+  hosts: all
   gather_facts: false
   environment: "{{ environment_vars }}"
-  
-  vars: 
+
+  vars:
     program: HELLOWRD
     applid: CICSTU01
     transaction: KYEM
@@ -31,7 +31,7 @@
         create_parameters:
           - name: "csd"
 
-    - name: Create the CICSTransactionDefinition 
+    - name: Create the CICSTransactionDefinition
       ibm.ibm_zos_cics.cmci_create:
         type: "CICSDefinitionTransaction"
         attributes:
@@ -41,7 +41,7 @@
         create_parameters:
           - name: "csd"
 
-    - name: Install the program 
+    - name: Install the program
       ibm.ibm_zos_cics.cmci_action:
         type: "CICSDefinitionProgram"
         action_name: CSDINSTALL
@@ -52,7 +52,7 @@
             - name: csdgroup
               value: "{{ csdgroup }}"
 
-    - name: Install the transaction 
+    - name: Install the transaction
       ibm.ibm_zos_cics.cmci_action:
         type: "CICSDefinitionTransaction"
         action_name: CSDINSTALL

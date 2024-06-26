@@ -1,0 +1,87 @@
+# (C) Copyright IBM Corp. 2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Deprovision CICS data sets
+  hosts: all
+  gather_facts: false
+  environment: "{{ environment_vars }}"
+
+  vars:
+    applid: CICSTU01
+
+  module_defaults:
+    group/ibm.ibm_zos_cics.region:
+      state: absent
+      region_data_sets:
+        dfhauxt:
+          dsn: "CICSTU.{{ applid }}.DFHAUXT"
+        dfhbuxt:
+          dsn: "CICSTU.{{ applid }}.DFHBUXT"
+        dfhdmpa:
+          dsn: "CICSTU.{{ applid }}.DFHDMPA"
+        dfhdmpb:
+          dsn: "CICSTU.{{ applid }}.DFHDMPB"
+        dfhcsd:
+          dsn: "CICSTU.{{ applid }}.DFHCSD"
+        dfhgcd:
+          dsn: "CICSTU.{{ applid }}.DFHGCD"
+        dfhlcd:
+          dsn: "CICSTU.{{ applid }}.DFHLCD"
+        dfhlrq:
+          dsn: "CICSTU.{{ applid }}.DFHLRQ"
+        dfhintra:
+          dsn: "CICSTU.{{ applid }}.DFHINTRA"
+        dfhtemp:
+          dsn: "CICSTU.{{ applid }}.DFHTEMP"
+        dfhstart:
+          dsn: "CICSTU.{{ applid }}.DFHSTART"
+      cics_data_sets:
+        sdfhauth: "CICSTS.V6R1M0.CICS.SDFHAUTH"
+        sdfhlic: "CICSTS.V6R1M0.CICS.SDFHLIC"
+        sdfhload: "CICSTS.V6R1M0.CICS.SDFHLOAD"
+      cpsm_data_sets:
+        seyuauth: "CICSTS.V6R1M0.CPSM.SEYUAUTH"
+        seyuload: "CICSTS.V6R1M0.CPSM.SEYULOAD"
+      le_data_sets:
+        sceecics: "CEE.SCEECICS"
+        sceerun: "CEE.SCEERUN"
+        sceerun2: "CEE.SCEERUN2"
+
+  tasks:
+    - name: Delete the auxiliary temporary storage data set (DFHTEMP)
+      ibm.ibm_zos_cics.aux_temp_storage:
+
+    - name: Delete the auxiliary trace data set (DFHAUXT)
+      ibm.ibm_zos_cics.aux_trace:
+
+    - name: Delete the second auxiliary trace data set (DFHBUXT)
+      ibm.ibm_zos_cics.aux_trace:
+        destination: B
+
+    - name: Delete the transaction dump data set (DFHDMPA)
+      ibm.ibm_zos_cics.transaction_dump:
+
+    - name: Delete the second transaction dump data set (DFHDMPB)
+      ibm.ibm_zos_cics.transaction_dump:
+        destination: B
+
+    - name: Delete the CSD data set (DFHCSD)
+      ibm.ibm_zos_cics.csd:
+
+    - name: Delete the transient data intrapartition data set (DFHINTRA)
+      ibm.ibm_zos_cics.td_intrapartition:
+
+    - name: Delete the local request queue data set (DFHLRQ)
+      ibm.ibm_zos_cics.local_request_queue:
+
+    - name: Delete the global catalog data set (DFHGCD)
+      ibm.ibm_zos_cics.global_catalog:
+
+    - name: Delete the local catalog data set (DFHLCD)
+      ibm.ibm_zos_cics.local_catalog:
+
+    - name: Delete startup JCL (DFHSTART)
+      ibm.ibm_zos_cics.region_jcl:
+        applid: "{{ applid }}"
+
+

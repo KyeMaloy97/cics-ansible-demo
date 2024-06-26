@@ -1,0 +1,56 @@
+# (C) Copyright IBM Corp. 2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
+- name: Provision CICS region data sets in intial state and start it
+  hosts: all
+  gather_facts: false
+  vars_files: "{{ playbook_dir }}/host_vars/variables.yml"
+  environment: "{{ environment_vars }}"
+
+  vars:
+    applid: CICSTU01
+    cmci_port: 2700
+
+  module_defaults:
+    group/ibm.ibm_zos_cics.region:
+      state: initial
+      region_data_sets:
+        dfhauxt:
+          dsn: "CICSTU.{{ applid }}.DFHAUXT"
+        dfhbuxt:
+          dsn: "CICSTU.{{ applid }}.DFHBUXT"
+        dfhdmpa:
+          dsn: "CICSTU.{{ applid }}.DFHDMPA"
+        dfhdmpb:
+          dsn: "CICSTU.{{ applid }}.DFHDMPB"
+        dfhcsd:
+          dsn: "CICSTU.{{ applid }}.DFHCSD"
+        dfhgcd:
+          dsn: "CICSTU.{{ applid }}.DFHGCD"
+        dfhlcd:
+          dsn: "CICSTU.{{ applid }}.DFHLCD"
+        dfhlrq:
+          dsn: "CICSTU.{{ applid }}.DFHLRQ"
+        dfhintra:
+          dsn: "CICSTU.{{ applid }}.DFHINTRA"
+        dfhtemp:
+          dsn: "CICSTU.{{ applid }}.DFHTEMP"
+        dfhstart:
+          dsn: "CICSTU.{{ applid }}.DFHSTART"
+      cics_data_sets:
+        sdfhauth:  "CICSTS.V6R1M0.CICS.SDFHAUTH"
+        sdfhlic: "CICSTS.V6R1M0.CICS.SDFHLIC"
+        sdfhload: "CICSTS.V6R1M0.CICS.SDFHLOAD"
+      cpsm_data_sets:
+        seyuauth: "CICSTS.V6R1M0.CPSM.SEYUAUTH"
+        seyuload: "CICSTS.V6R1M0.CPSM.SEYULOAD"
+      le_data_sets:
+        sceecics: "CEE.SCEECICS"
+        sceerun: "CEE.SCEERUN"
+        sceerun2: "CEE.SCEERUN2"
+
+  tasks:
+    - name: Submit region JCL
+      ansible.builtin.command:
+        cmd: jsub "CICSTU.{{ applid }}.DFHSTART"
+      changed_when: True

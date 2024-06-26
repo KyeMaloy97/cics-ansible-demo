@@ -1,3 +1,6 @@
+# (C) Copyright IBM Corp. 2024
+# Apache License, Version 2.0 (see https://opensource.org/licenses/Apache-2.0)
+---
 - name: Stop CICS and deprovision CICS Data sets
   hosts: all
   gather_facts: false
@@ -33,7 +36,7 @@
         dfhstart:
           dsn: "CICSTU.{{ applid }}.DFHSTART"
       cics_data_sets:
-        sdfhauth:  "CICSTS.V6R1M0.CICS.SDFHAUTH"
+        sdfhauth: "CICSTS.V6R1M0.CICS.SDFHAUTH"
         sdfhlic: "CICSTS.V6R1M0.CICS.SDFHLIC"
         sdfhload: "CICSTS.V6R1M0.CICS.SDFHLOAD"
       cpsm_data_sets:
@@ -49,7 +52,7 @@
       ibm.ibm_zos_cics.stop_region:
         job_name: "{{ applid }}"
       register: result
-    
+
     - name: Log output of stop
       ansible.builtin.debug:
         msg: "{{ result }}"
@@ -89,5 +92,3 @@
     - name: Delete startup JCL (DFHSTART)
       ibm.ibm_zos_cics.region_jcl:
         applid: "{{ applid }}"
-
-
